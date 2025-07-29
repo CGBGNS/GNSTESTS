@@ -1,0 +1,356 @@
+
+  
+  <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <!--meta http-equiv="refresh" content="90"--> <!-- Refresco cada 90 segs-->
+      <title>Visualizador de KPIs por cola</title>
+      <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+      <style>
+      table.redTable {
+      border: 1px solid #03010C;
+      background-color: #EEEEEE;
+      width: 70%;
+      text-align: left;
+      border-collapse: collapse;
+    }
+    table.redTable td, table.redTable th {
+      border: 1px solid #AAAAAA;
+      padding: 3px 2px;
+    }
+    table.redTable tbody td {
+      font-size: 13px;
+    }
+    table.redTable tr:nth-child(even) {
+      background: #F5D6D6;
+    }
+    table.redTable thead {
+      background: #F20F21;
+      background: -moz-linear-gradient(top, #f54b58 0%, #f32737 66%, #F20F21 100%);
+      background: -webkit-linear-gradient(top, #f54b58 0%, #f32737 66%, #F20F21 100%);
+      background: linear-gradient(to bottom, #f54b58 0%, #f32737 66%, #F20F21 100%);
+      border-bottom: 2px solid #444444;
+    }
+    table.redTable thead th {
+      font-size: 15px;
+      font-weight: bold;
+      color: #FFFFFF;
+      border-left: 2px solid #D0E4F5;
+    }
+    table.redTable thead th:first-child {
+      border-left: none;
+    }
+    
+    table.redTable tfoot {
+      font-size: 14px;
+      font-weight: bold;
+      color: #FFFFFF;
+      background: #D0E4F5;
+      background: -moz-linear-gradient(top, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
+      background: -webkit-linear-gradient(top, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
+      background: linear-gradient(to bottom, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
+      border-top: 2px solid #444444;
+    }
+    table.redTable tfoot td {
+      font-size: 14px;
+    }
+    table.redTable tfoot .links {
+      text-align: right;
+    }
+    table.redTable tfoot .links a{
+      display: inline-block;
+      background: #1C6EA4;
+      color: #FFFFFF;
+      padding: 2px 8px;
+      border-radius: 5px;
+    }
+    
+    
+    
+      </style>
+    </head>
+    <body>
+    <center>
+    <h1>Visualizador de KPIs por cola</h1>
+    <button onclick="loadData()">Refrescar Datos</button>
+    <br>
+    <table class="redTable">
+    <tbody id="tabla-container"></tbody>
+    </table>
+    <!--button onclick="refreshData()">Refrescar Datos</button-->
+    
+    <button onclick="loadData()">Refrescar Datos</button>
+    <script>
+      //v1
+      const CLIENT_ID = '3da67cdc-4c46-424a-adae-6807465fc4a4'; 
+      const ENVIRONMENT = 'mypurecloud.de';
+      const API_ENDPOINT = 'https://api.mypurecloud.de/api/v2/analytics/queues/observations/query';
+      const API_ENDPOINT2 = 'https://api.mypurecloud.de/api/v2/analytics/conversations/activity/query';
+      const REDIRECT_URI = 'https://CGBGNS.github.io/GNSTESTS/index.html';
+      
+      var gToken = getParameterByName('access_token');
+      const queues = {
+        "a9aa307e-9683-4403-b7b5-db3cf1156cca": { name: "SI24_AUT-ASISTENCIAVIAJE_ESSD0201" }
+          };
+              
+      const predicates = Object.keys(queues).map(queueId => (
+      {
+        dimension: "queueId",
+        value: queueId
+      }));
+      
+      const requestData1stAPI = {
+        metrics: [
+          "oInteracting",
+          "oWaiting",
+          "oUserRoutingStatuses",
+          "oUserPresences"
+        ],
+        filter: {
+          type: "and",
+          clauses: [
+            {
+              type: "or",
+              predicates: predicates
+            }
+          ]
+        },
+        truncated: false,
+        detailMetrics: [
+          "oWaiting",
+          "oUserPresences"
+        ]
+      };
+      
+       const requestData2ndAPI = {
+      "order": "asc",
+      "filter": {
+        "type": "and",
+        "clauses": [
+          {
+            "type": "or",
+            "predicates": predicates
+          }
+        ],
+        "predicates": [
+          {
+            "dimension": "mediaType",
+            "value": "voice"
+          }
+        ]
+      },
+      "groupBy": [
+        "queueId"
+      ],
+      "peekAtLast": true,
+      "metrics": [
+        {
+          "metric": "oWaiting",
+          "details": true
+        }
+      ],
+      "subscribe": true
+       };
+    
+      function getParameterByName(name) {
+        name = name.replace(/[\\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\#&]" + name + "=([^&#]*)"),
+          results = regex.exec(location.hash);
+        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+      }
+    
+      async function loadData() {
+
+        $.ajax({
+          url: API_ENDPOINT,
+          type: 'POST',
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + gToken);
+          },
+          data: JSON.stringify(requestData1stAPI),
+          contentType: 'application/json',
+          success: function(data) {
+            getSecondAPIData(data);
+          }
+        });
+		setTimeout(function(){ 
+            loadData();
+        }, 15000); 
+     	
+        
+      }
+      
+      
+      function getSecondAPIData(data1stAPI){
+       
+        $.ajax({
+          url: API_ENDPOINT2,
+          type: 'POST',
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + gToken);
+          },
+          data: JSON.stringify(requestData2ndAPI),
+          contentType: 'application/json',
+          success: function(data2ndAPI) {
+            
+          displayData(data1stAPI,data2ndAPI);
+         }
+        });
+    
+    }
+    
+    
+    function displayData(data1stAPI, data2ndAPI) {
+      
+      
+      const uniqueQueueIds = [...new Set(data1stAPI.results.map(item => item.group.queueId))];
+      // Ordenar uniqueQueueIds seg�n el nombre de la cola
+    uniqueQueueIds.sort((queueId1, queueId2) => {
+    const queueName1 = queues[queueId1] ? queues[queueId1].name : '';
+    const queueName2 = queues[queueId2] ? queues[queueId2].name : '';
+    return queueName1.localeCompare(queueName2);
+});
+
+if (data2ndAPI.results && data2ndAPI.results.some(item => item.group && item.group.queueId !== undefined)) {
+const uniqueQueueIds2 = [...new Set(data2ndAPI.results.map(item => item.group.queueId))];
+      // Ordenar uniqueQueueIds seg�n el nombre de la cola
+    uniqueQueueIds2.sort((queueId1, queueId2) => {
+    const queueName1 = queues[queueId1] ? queues[queueId1].name : '';
+    const queueName2 = queues[queueId2] ? queues[queueId2].name : '';
+    return queueName1.localeCompare(queueName2);
+}
+)
+};
+      const tableHtml = `<table border="1">
+      <tr>
+                        <th>Nombre de la cola</th>
+                        <th>Interactuando</th>
+<th>En espera</th>
+<th>M&aacutes tiempo en espera</th>
+<th>Agentes interactuando</th>
+<th>Ociosos</th>
+<th>Gesti&oacuten back office</th>
+<th>Gesti&oacuten Contacto</th>
+<th>Descanso</th>
+<th>Pausa visual</th>
+<th>Otros</th>
+                      </tr>
+                      ${uniqueQueueIds.map(queueId => {
+			                const queueName = queues[queueId] || 'Desconocido'; // Obtiene el nombre de la cola del mapeo
+                      const rowData = data1stAPI.results.filter(item => item.group.queueId === queueId);
+                      const sumInteracting = rowData.reduce((sum, item) => sum + getMetricValue(item.data, "oInteracting"), 0);
+                      //const sumWaiting = rowData.reduce((sum, item) => sum + getMetricValue(item.data, "oWaiting"), 0);
+                      //const maxObservationData = Math.max(...rowData.map(item => getMetricLWTValue(item.data, "observationData")), "");
+                        const rowData2 = data2ndAPI.results.filter(item => item.group.queueId === queueId);
+                        const sumWaiting2 = rowData2.reduce((sum, item) => sum + getWaitingValue(item.data, "oWaiting"), 0);
+                        const activityDate = rowData2.length > 0 ? rowData2[0].entities[0].activityDate : "";
+			const OnQueue = rowData.reduce((sum, item) => sum + getMetricStatusValue(item.data, "e08eaf1b-ee47-4fa9-a231-1200e284798f"), 0);
+      const AgInteracting = rowData.reduce((sum, item) => sum + getMetricStatusValue(item.data, "INTERACTING"), 0);
+      const AgIdle = rowData.reduce((sum, item) => sum + getMetricStatusValue(item.data, "IDLE"), 0);
+      const Backoffice = rowData.reduce((sum, item) => sum + getMetricStatusValue(item.data, "6b3a63b6-5634-4aff-8838-674ffadb23de"), 0);
+      const Contacto = rowData.reduce((sum, item) => sum + getMetricStatusValue(item.data, "09285548-27dc-4693-b348-26ce839850da"), 0);
+      const Descanso = rowData.reduce((sum, item) => sum + getMetricStatusValue(item.data, "46d1ad03-8828-4161-a6b8-dcec7a42d006"), 0);
+      const PV = rowData.reduce((sum, item) => sum + getMetricStatusValue(item.data, "e1e0e671-d01b-4c41-8a5d-b870641b9c0a"), 0);
+      const Otros = rowData.reduce((sum, item) => sum + getMetricStatusValue(item.data, "3fd96123-badb-4f69-bc03-1b1ccc6d8014"), 0)+rowData.reduce((sum, item) => sum + getMetricStatusValue(item.data, "6a3af858-942f-489d-9700-5f9bcdcdae9b"), 0)+rowData.reduce((sum, item) => sum + getMetricStatusValue(item.data, "bbdff279-7ae1-48ea-bade-7831d7234c64"), 0)+rowData.reduce((sum, item) => sum + getMetricStatusValue(item.data, "d2390a99-8546-bad9-8f0a-219548e8aeb0"), 0);
+
+                        return `<tr>
+                                  <td>${queueName.name}</td>
+                                  <td>${sumInteracting}</td>
+                                  <td>${sumWaiting2}</td>
+                                  <td>${formatTime(activityDate)}</td>
+				                          <td>${AgInteracting}</td>
+                                  <td>${AgIdle}</td>
+                                  <td>${Backoffice}</td>
+                                  <td>${Contacto}</td>
+                                  <td>${Descanso}</td>
+                                  <td>${PV}</td>
+                                  <td>${Otros}</td>
+                                </tr>`;
+                        }).join('')}
+                      </table>`;
+
+                  const tablaContainer = document.getElementById('tabla-container');
+      tablaContainer.innerHTML = tableHtml;
+
+                    }
+
+    function getMetricValue(dataItems, metricName) {
+      const metricData = dataItems.find(item => item.metric === metricName);
+      return metricData ? metricData.stats.count : 0;
+    }
+
+    function getMetricLWTValue(dataItems, metricName) {
+      const observationDataMetric = dataItems.find(item => item.metric === "oWaiting");
+      console.log(observationDataMetric);
+  if (observationDataMetric && observationDataMetric.observations) {
+    // Obtener el valor m�ximo de observationData
+    const maxObservationData = Math.min(...observationDataMetric.observations.map(obs => new Date(obs.observationDate)));
+    console.log(maxObservationData);
+    return maxObservationData;
+  }
+  return null;
+}
+
+      function refreshData() {
+        loadData();
+      }
+    
+    // Check if there is a hash in the URL
+    if (window.location.hash) {
+      const token = getParameterByName('access_token');
+      console.log("token" + token);
+	//while (true){
+	
+      loadData();
+    // 
+	 //}
+
+    } else {
+      console.log("REDIRECT_URI: " + REDIRECT_URI);
+      const queryStringData = {
+        response_type: "token",
+        client_id: CLIENT_ID,
+        redirect_uri: REDIRECT_URI
+      };
+      window.location.replace(`https://login.${ENVIRONMENT}/oauth/authorize?` + jQuery.param(queryStringData));
+    }
+    
+    
+    
+    
+    function getWaitingValue(dataItems, metricName) {
+  const metricData = dataItems.find(item => item.metric === metricName);
+  return metricData ? metricData.count : 0;
+}
+
+function getMetricStatusValue(dataItems, metricName) {
+  const metricData = dataItems.find(item => item.qualifier === metricName);
+  return metricData ? metricData.stats.count : 0;
+}
+
+    function formatTime(sTimeStamp) {
+        
+      if (!sTimeStamp || sTimeStamp.length === 0){
+        return "";
+      }else{	
+        var dtTimeStamp = new Date(sTimeStamp);
+        now = new Date();
+        var sec_num = (now - dtTimeStamp) / 1000;
+        var days    = Math.floor(sec_num / (3600 * 24));
+        var hours   = Math.floor((sec_num - (days * (3600 * 24)))/3600);
+        var minutes = Math.floor((sec_num - (days * (3600 * 24)) - (hours * 3600)) / 60);
+        var seconds = Math.floor(sec_num - (days * (3600 * 24)) - (hours * 3600) - (minutes * 60));
+    
+        if (hours   < 10) {hours   = "0"+hours;}
+        if (minutes < 10) {minutes = "0"+minutes;}
+        if (seconds < 10) {seconds = "0"+seconds;}
+    
+        return  hours+':'+minutes+':'+seconds;
+      }
+    }
+    
+    </script>
+    </center>
+    </body>
+    </html>
