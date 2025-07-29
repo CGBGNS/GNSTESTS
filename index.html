@@ -96,7 +96,6 @@ document.getElementById('api-endpoint').textContent = API_ENDPOINT
 
       var gToken = getParameterByName('access_token');      
              
-console.log("URL completa:", window.location.href);
  
       const requestData1stAPI = {
   "muted": true
@@ -113,6 +112,8 @@ function getParameterByName(name) {
 
   const searchMatch = regexSearch.exec(window.location.search);
   if (searchMatch) return decodeURIComponent(searchMatch[1].replace(/\+/g, " "));
+
+  console.log("URL completa:", window.location.href);
 
   return "";
 }
