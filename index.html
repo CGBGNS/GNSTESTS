@@ -7,68 +7,7 @@
       <!--meta http-equiv="refresh" content="90"--> <!-- Refresco cada 90 segs-->
       <title>Muteador</title>
       <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-      <style>
-      table.redTable {
-      border: 1px solid #03010C;
-      background-color: #EEEEEE;
-      width: 70%;
-      text-align: left;
-      border-collapse: collapse;
-    }
-    table.redTable td, table.redTable th {
-      border: 1px solid #AAAAAA;
-      padding: 3px 2px;
-    }
-    table.redTable tbody td {
-      font-size: 13px;
-    }
-    table.redTable tr:nth-child(even) {
-      background: #F5D6D6;
-    }
-    table.redTable thead {
-      background: #F20F21;
-      background: -moz-linear-gradient(top, #f54b58 0%, #f32737 66%, #F20F21 100%);
-      background: -webkit-linear-gradient(top, #f54b58 0%, #f32737 66%, #F20F21 100%);
-      background: linear-gradient(to bottom, #f54b58 0%, #f32737 66%, #F20F21 100%);
-      border-bottom: 2px solid #444444;
-    }
-    table.redTable thead th {
-      font-size: 15px;
-      font-weight: bold;
-      color: #FFFFFF;
-      border-left: 2px solid #D0E4F5;
-    }
-    table.redTable thead th:first-child {
-      border-left: none;
-    }
-    
-    table.redTable tfoot {
-      font-size: 14px;
-      font-weight: bold;
-      color: #FFFFFF;
-      background: #D0E4F5;
-      background: -moz-linear-gradient(top, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
-      background: -webkit-linear-gradient(top, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
-      background: linear-gradient(to bottom, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
-      border-top: 2px solid #444444;
-    }
-    table.redTable tfoot td {
-      font-size: 14px;
-    }
-    table.redTable tfoot .links {
-      text-align: right;
-    }
-    table.redTable tfoot .links a{
-      display: inline-block;
-      background: #1C6EA4;
-      color: #FFFFFF;
-      padding: 2px 8px;
-      border-radius: 5px;
-    }
-    
-    
-    
-      </style>
+
     </head>
     <body>
     <center>
@@ -85,17 +24,38 @@
       //v1
       const CLIENT_ID = '3da67cdc-4c46-424a-adae-6807465fc4a4'; 
       const ENVIRONMENT = 'mypurecloud.de';
-      
-      const REDIRECT_URI = 'https://CGBGNS.github.io/GNSTESTS/index.html';
+      const REDIRECT_URI = 'https://cgbgns.github.io/GNSTESTS/index.html';
       
 const params = new URLSearchParams(window.location.search);
 const conversationId = params.get('conversationId');
 const participantId = params.get('participantId');
 const API_ENDPOINT = `https://api.mypurecloud.de/api/v2/conversations/calls/${conversationId}/participants/${participantId}`;
-document.getElementById('api-endpoint').textContent = API_ENDPOINT
 
-      var gToken = getParameterByName('access_token');      
+      //var gToken = getParameterByName('access_token');      
              
+      
+function getTokenFromHash() {
+  const hash = window.location.hash.substring(1);
+  const params = new URLSearchParams(hash);
+  return params.get('access_token');
+}
+
+const gToken = getTokenFromHash();
+
+if (!gToken) {
+  // Redirige al login de Genesys Cloud
+  const authUrl = `https://login.${ENVIRONMENT}/oauth/authorize?` + 
+    $.param({
+      response_type: 'token',
+      client_id: CLIENT_ID,
+      redirect_uri: REDIRECT_URI
+    });
+  window.location.replace(authUrl);
+} else {
+  console.log("Token obtenido:", gToken);
+  // Aquí puedes llamar a loadData() si quieres ejecutar algo automáticamente
+}
+
  
       const requestData1stAPI = {
   "muted": true
