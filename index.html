@@ -29,18 +29,35 @@
 const params = new URLSearchParams(window.location.search);
 const conversationId = params.get('conversationId');
 const participantId = params.get('participantId');
+const state = btoa(JSON.stringify({ conversationId, participantId }));
 const API_ENDPOINT = `https://api.mypurecloud.de/api/v2/conversations/calls/${conversationId}/participants/${participantId}`;
 
       //var gToken = getParameterByName('access_token');      
              
       
-function getTokenFromHash() {
+      function getTokenAndStateFromHash() {
   const hash = window.location.hash.substring(1);
   const params = new URLSearchParams(hash);
-  return params.get('access_token');
+  const token = params.get('access_token');
+  const state = params.get('state');
+  let conversationId = null;
+  let participantId = null;
+
+  if (state) {
+    try {
+      const parsed = JSON.parse(atob(state));
+      conversationId = parsed.conversationId;
+      participantId = parsed.participantId;
+    } catch (e) {
+      console.error("Error al decodificar el state:", e);
+    }
+  }
+
+  return { token, conversationId, participantId };
 }
 
-const gToken = getTokenFromHash();
+
+const gToken = getTokenAndStateFromHash();
 
 if (!gToken) {
   // Redirige al login de Genesys Cloud
@@ -48,7 +65,8 @@ if (!gToken) {
     $.param({
       response_type: 'token',
       client_id: CLIENT_ID,
-      redirect_uri: REDIRECT_URI
+      redirect_uri: REDIRECT_URI,
+      state: state
     });
   window.location.replace(authUrl);
 } else {
@@ -56,11 +74,6 @@ if (!gToken) {
   // Aquí puedes llamar a loadData() si quieres ejecutar algo automáticamente
 }
 
- 
-      const requestData1stAPI = {
-  "muted": true
-};
-          
 
 function getParameterByName(name) {
   name = name.replace(/[\[\]]/g, "\\$&");
