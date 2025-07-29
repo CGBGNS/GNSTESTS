@@ -5,7 +5,7 @@
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <!--meta http-equiv="refresh" content="90"--> <!-- Refresco cada 90 segs-->
-      <title>Visualizador de KPIs por cola</title>
+      <title>Muteador</title>
       <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
       <style>
       table.redTable {
@@ -95,17 +95,28 @@ const API_ENDPOINT = `https://api.mypurecloud.de/api/v2/conversations/calls/${co
 document.getElementById('api-endpoint').textContent = API_ENDPOINT
 
       var gToken = getParameterByName('access_token');      
-              
+             
+console.log("URL completa:", window.location.href);
+ 
       const requestData1stAPI = {
   "muted": true
 };
           
-      function getParameterByName(name) {
-        name = name.replace(/[\\[]/, "\\[").replace(/[\]]/, "\\]");
-        var regex = new RegExp("[\\#&]" + name + "=([^&#]*)"),
-          results = regex.exec(location.hash);
-        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-      }
+
+function getParameterByName(name) {
+  name = name.replace(/[\[\]]/g, "\\$&");
+  const regexHash = new RegExp("[#&]" + name + "=([^&]*)");
+  const regexSearch = new RegExp("[?&]" + name + "=([^&]*)");
+
+  const hashMatch = regexHash.exec(window.location.hash);
+  if (hashMatch) return decodeURIComponent(hashMatch[1].replace(/\+/g, " "));
+
+  const searchMatch = regexSearch.exec(window.location.search);
+  if (searchMatch) return decodeURIComponent(searchMatch[1].replace(/\+/g, " "));
+
+  return "";
+}
+
     
 
 // Función principal que se ejecuta al hacer clic
