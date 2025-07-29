@@ -75,8 +75,6 @@
     <h1>Muteador de llamadas</h1>
     <button onclick="loadData()">Mutear</button>
     <br>
-    
-<p><strong>API Endpoint:</strong> <span id="api-endpoint"></span></p>
 
     <table class="redTable">
     <tbody id="tabla-container"></tbody>
@@ -98,12 +96,6 @@ document.getElementById('api-endpoint').textContent = API_ENDPOINT
 
       var gToken = getParameterByName('access_token');      
               
-      const predicates = Object.keys(queues).map(queueId => (
-      {
-        dimension: "queueId",
-        value: queueId
-      }));
-      
       const requestData1stAPI = {
   "muted": true
 };
@@ -116,6 +108,9 @@ document.getElementById('api-endpoint').textContent = API_ENDPOINT
       }
     
       async function loadData() {
+        console.log("Botón clicado");
+        console.log("API_ENDPOINT:", API_ENDPOINT);
+        console.log("Token:", gToken);
   $.ajax({
     url: API_ENDPOINT,
     type: 'PATCH',
