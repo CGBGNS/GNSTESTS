@@ -89,8 +89,8 @@
       const REDIRECT_URI = 'https://CGBGNS.github.io/GNSTESTS/index.html';
       
 const params = new URLSearchParams(window.location.search);
-const usuario = params.get('conversationId');
-const modo = params.get('participantId');
+const conversationId = params.get('conversationId');
+const participantId = params.get('participantId');
 const API_ENDPOINT = `https://api.mypurecloud.de/api/v2/conversations/calls/${conversationId}/participants/${participantId}`;
 document.getElementById('api-endpoint').textContent = API_ENDPOINT
 
