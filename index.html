@@ -120,13 +120,17 @@ async function loadData() {
     return;
   }
 
+const body = {
+    muted: true
+  };
+
   $.ajax({
     url: API_ENDPOINT,
     type: 'PATCH',
     beforeSend: function(xhr) {
       xhr.setRequestHeader('Authorization', 'Bearer ' + gToken);
     },
-    data: JSON.stringify(requestData1stAPI),
+    data: JSON.stringify(body),
     contentType: 'application/json',
     success: function(data) {
       console.log('Respuesta de la API:', data);
