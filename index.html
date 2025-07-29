@@ -75,6 +75,9 @@
     <h1>Muteador de llamadas</h1>
     <button onclick="loadData()">Mutear</button>
     <br>
+    
+<p><strong>API Endpoint:</strong> <span id="api-endpoint"></span></p>
+
     <table class="redTable">
     <tbody id="tabla-container"></tbody>
     </table>
@@ -91,7 +94,7 @@ const params = new URLSearchParams(window.location.search);
 const usuario = params.get('conversationId');
 const modo = params.get('participantId');
 const API_ENDPOINT = `https://api.mypurecloud.de/api/v2/conversations/calls/${conversationId}/participants/${participantId}`;
-
+document.getElementById('api-endpoint').textContent = API_ENDPOINT
 
       var gToken = getParameterByName('access_token');      
               
@@ -132,9 +135,6 @@ const API_ENDPOINT = `https://api.mypurecloud.de/api/v2/conversations/calls/${co
       console.error('Error en la llamada PATCH:', err);
     }
   });
-
-  // Repetir la llamada cada 15 segundos
-  setTimeout(loadData, 15000);
 }
    
       function refreshData() {
