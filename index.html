@@ -107,10 +107,19 @@ document.getElementById('api-endpoint').textContent = API_ENDPOINT
         return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
       }
     
-      async function loadData() {
-        console.log("Botón clicado");
-        console.log("API_ENDPOINT:", API_ENDPOINT);
-        console.log("Token:", gToken);
+
+// Función principal que se ejecuta al hacer clic
+async function loadData() {
+  console.log("Botón clicado");
+  console.log("API_ENDPOINT:", API_ENDPOINT);
+  console.log("Token:", gToken);
+
+  // Validación opcional
+  if (!API_ENDPOINT || !gToken) {
+    console.error("Faltan datos necesarios para la llamada (API_ENDPOINT o gToken)");
+    return;
+  }
+
   $.ajax({
     url: API_ENDPOINT,
     type: 'PATCH',
@@ -120,17 +129,14 @@ document.getElementById('api-endpoint').textContent = API_ENDPOINT
     data: JSON.stringify(requestData1stAPI),
     contentType: 'application/json',
     success: function(data) {
-      // Aquí puedes manejar directamente la respuesta
       console.log('Respuesta de la API:', data);
-
-      // Si necesitas hacer algo con los datos, hazlo aquí
-      // Por ejemplo, actualizar el DOM o preparar otra llamada
     },
     error: function(err) {
       console.error('Error en la llamada PATCH:', err);
     }
   });
 }
+
    
       function refreshData() {
         loadData();
