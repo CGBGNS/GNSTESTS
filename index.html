@@ -25,137 +25,90 @@
       const CLIENT_ID = '3da67cdc-4c46-424a-adae-6807465fc4a4'; 
       const ENVIRONMENT = 'mypurecloud.de';
       const REDIRECT_URI = 'https://cgbgns.github.io/GNSTESTS/index.html';
-      
-const urlParams = new URLSearchParams(window.location.search);
-const conversationIdFromUrl = urlParams.get('conversationId');
-const participantIdFromUrl = urlParams.get('participants');
+      const urlParams = new URLSearchParams(window.location.search);
+    const conversationIdFromUrl = urlParams.get('conversationId');
+    const participantIdFromUrl = urlParams.get('participantId');
 
-const state = btoa(JSON.stringify({ conversationId: conversationIdFromUrl, participantId: participantIdFromUrl }));
-console.log("state al declarar:", state);
+    function getTokenAndStateFromHash() {
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      const token = params.get('access_token');
+      const state = params.get('state');
+      console.log("state recibido:", state);
+      let conversationId = null;
+      let participantId = null;
 
-
-      //var gToken = getParameterByName('access_token');      
-             
-      
-      function getTokenAndStateFromHash() {
-  const hash = window.location.hash.substring(1);
-  const params = new URLSearchParams(hash);
-  const token = params.get('access_token');
-  const state = params.get('state');
-  console.log("state:", state);
-  let conversationId = null;
-  let participantId = null;
-
-  if (state) {
-    try {
-      const parsed = JSON.parse(atob(state));
-      conversationId = parsed.conversationId;
-      participantId = parsed.participantId;
-    } catch (e) {
-      console.error("Error al decodificar el state:", e);
-    }
-  }
-
-  return { token, conversationId, participantId };
-}
-
-
-const { token: gToken, conversationId, participantId } = getTokenAndStateFromHash();
-
-const API_ENDPOINT = `https://api.mypurecloud.de/api/v2/conversations/calls/${conversationId}/participants/${participantId}`;
-
-if (!gToken) {
-  // Redirige al login de Genesys Cloud
-  const authUrl = `https://login.${ENVIRONMENT}/oauth/authorize?` + 
-    $.param({
-      response_type: 'token',
-      client_id: CLIENT_ID,
-      redirect_uri: REDIRECT_URI,
-      state: state
-    });
-  window.location.replace(authUrl);
-} else {
-  console.log("Token obtenido:", gToken);
-  // Aquí puedes llamar a loadData() si quieres ejecutar algo automáticamente
-}
-
-
-function getParameterByName(name) {
-  name = name.replace(/[\[\]]/g, "\\$&");
-  const regexHash = new RegExp("[#&]" + name + "=([^&]*)");
-  const regexSearch = new RegExp("[?&]" + name + "=([^&]*)");
-
-  const hashMatch = regexHash.exec(window.location.hash);
-  if (hashMatch) return decodeURIComponent(hashMatch[1].replace(/\+/g, " "));
-
-  const searchMatch = regexSearch.exec(window.location.search);
-  if (searchMatch) return decodeURIComponent(searchMatch[1].replace(/\+/g, " "));
-
-  console.log("URL completa:", window.location.href);
-
-  return "";
-}
-
-    
-
-// Función principal que se ejecuta al hacer clic
-async function loadData() {
-  console.log("Botón clicado");
-  console.log("API_ENDPOINT:", API_ENDPOINT);
-  console.log("Token:", gToken);
-
-  // Validación opcional
-  if (!API_ENDPOINT || !gToken) {
-    console.error("Faltan datos necesarios para la llamada (API_ENDPOINT o gToken)");
-    return;
-  }
-
-const body = {
-    muted: true
-  };
-
-  $.ajax({
-    url: API_ENDPOINT,
-    type: 'PATCH',
-    beforeSend: function(xhr) {
-      xhr.setRequestHeader('Authorization', 'Bearer ' + gToken);
-    },
-    data: JSON.stringify(body),
-    contentType: 'application/json',
-    success: function(data) {
-      console.log('Respuesta de la API:', data);
-    },
-    error: function(err) {
-      console.error('Error en la llamada PATCH:', err);
-    }
-  });
-}
-
-   
-      function refreshData() {
-        loadData();
+      if (state) {
+        try {
+          const parsed = JSON.parse(atob(state));
+          conversationId = parsed.conversationId;
+          participantId = parsed.participantId;
+        } catch (e) {
+          console.error("Error al decodificar el state:", e);
+        }
       }
-    
-    // Check if there is a hash in the URL
-    if (window.location.hash) {
-      const token = getParameterByName('access_token');
-      console.log("token" + token);
-	//while (true){
-	
-      loadData();
-    // 
-	 //}
 
-    } else {
-      console.log("REDIRECT_URI: " + REDIRECT_URI);
-      const queryStringData = {
-        response_type: "token",
-        client_id: CLIENT_ID,
-        redirect_uri: REDIRECT_URI
-      };
-      window.location.replace(`https://login.${ENVIRONMENT}/oauth/authorize?` + jQuery.param(queryStringData));
+      return { token, conversationId, participantId };
     }
-    
+
+    const { token: gToken, conversationId, participantId } = getTokenAndStateFromHash();
+
+    if (!gToken) {
+      if (!conversationIdFromUrl || !participantIdFromUrl) {
+        alert("Faltan parámetros en la URL. No se puede continuar.");
+        throw new Error("Faltan parámetros en la URL");
+      }
+
+      const state = btoa(JSON.stringify({
+        conversationId: conversationIdFromUrl,
+        participantId: participantIdFromUrl
+      }));
+      console.log("Redirigiendo con state:", state);
+
+      const authUrl = `https://login.${ENVIRONMENT}/oauth/authorize?` + 
+        $.param({
+          response_type: 'token',
+          client_id: CLIENT_ID,
+          redirect_uri: REDIRECT_URI,
+          state: state
+        });
+      window.location.replace(authUrl);
+    } else {
+      console.log("Token obtenido:", gToken);
+      console.log("conversationId:", conversationId);
+      console.log("participantId:", participantId);
+
+      const API_ENDPOINT = `https://api.${ENVIRONMENT}/api/v2/conversations/calls/${conversationId}/participants/${participantId}`;
+
+      window.loadData = function() {
+        console.log("Botón clicado");
+        console.log("API_ENDPOINT:", API_ENDPOINT);
+        console.log("Token:", gToken);
+
+        if (!API_ENDPOINT || !gToken) {
+          console.error("Faltan datos necesarios para la llamada (API_ENDPOINT o gToken)");
+          return;
+        }
+
+        const body = { muted: true };
+
+        $.ajax({
+          url: API_ENDPOINT,
+          type: 'PATCH',
+          beforeSend: function(xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' + gToken);
+          },
+          data: JSON.stringify(body),
+          contentType: 'application/json',
+          success: function(data) {
+            console.log('Respuesta de la API:', data);
+          },
+          error: function(err) {
+            console.error('Error en la llamada PATCH:', err);
+          }
+        });
+      };
+    }
     </script>
     </center>
     </body>
