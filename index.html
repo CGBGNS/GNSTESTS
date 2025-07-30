@@ -40,6 +40,7 @@ const API_ENDPOINT = `https://api.mypurecloud.de/api/v2/conversations/calls/${co
   const params = new URLSearchParams(hash);
   const token = params.get('access_token');
   const state = params.get('state');
+  console.log("state:", state);
   let conversationId = null;
   let participantId = null;
 
@@ -68,6 +69,7 @@ if (!gToken) {
       redirect_uri: REDIRECT_URI,
       state: state
     });
+    console.log("state mientras obtenemos token:", state);
   window.location.replace(authUrl);
 } else {
   console.log("Token obtenido:", gToken);
