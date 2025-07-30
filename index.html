@@ -26,12 +26,13 @@
       const ENVIRONMENT = 'mypurecloud.de';
       const REDIRECT_URI = 'https://cgbgns.github.io/GNSTESTS/index.html';
       
-const params = new URLSearchParams(window.location.search);
-const conversationId = params.get('conversationId');
-const participantId = params.get('participantId');
-const state = btoa(JSON.stringify({ conversationId, participantId }));
+const urlParams = new URLSearchParams(window.location.search);
+const conversationIdFromUrl = urlParams.get('conversationId');
+const participantIdFromUrl = urlParams.get('participantId');
+
+const state = btoa(JSON.stringify({ conversationId: conversationIdFromUrl, participantId: participantIdFromUrl }));
 console.log("state al declarar:", state);
-const API_ENDPOINT = `https://api.mypurecloud.de/api/v2/conversations/calls/${conversationId}/participants/${participantId}`;
+
 
       //var gToken = getParameterByName('access_token');      
              
@@ -59,7 +60,9 @@ const API_ENDPOINT = `https://api.mypurecloud.de/api/v2/conversations/calls/${co
 }
 
 
-const gToken = getTokenAndStateFromHash();
+const { token: gToken, conversationId, participantId } = getTokenAndStateFromHash();
+
+const API_ENDPOINT = `https://api.mypurecloud.de/api/v2/conversations/calls/${conversationId}/participants/${participantId}`;
 
 if (!gToken) {
   // Redirige al login de Genesys Cloud
@@ -70,7 +73,6 @@ if (!gToken) {
       redirect_uri: REDIRECT_URI,
       state: state
     });
-    console.log("state mientras obtenemos token:", state);
   window.location.replace(authUrl);
 } else {
   console.log("Token obtenido:", gToken);
