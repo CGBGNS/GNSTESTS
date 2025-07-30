@@ -12,6 +12,9 @@
     <body>
     <center>
     <h1>Muteador de llamadas</h1>
+    <br>
+    <div id="mensajeConfirmacion" style="margin-top: 20px; font-weight: bold; color: green;"></div>
+    <br>
     <button onclick="loadData()">Mutear</button>
     <br>
 
@@ -106,6 +109,7 @@ const decodedState = decodeURIComponent(state);
           contentType: 'application/json',
           success: function(data) {
             console.log('Respuesta de la API:', data);
+            document.getElementById("mensajeConfirmacion").textContent = "✅ Llamada muteada.";
           },
           error: function(err) {
             console.error('Error en la llamada PATCH:', err);
