@@ -30,6 +30,7 @@ const params = new URLSearchParams(window.location.search);
 const conversationId = params.get('conversationId');
 const participantId = params.get('participantId');
 const state = btoa(JSON.stringify({ conversationId, participantId }));
+console.log("state al declarar:", state);
 const API_ENDPOINT = `https://api.mypurecloud.de/api/v2/conversations/calls/${conversationId}/participants/${participantId}`;
 
       //var gToken = getParameterByName('access_token');      
