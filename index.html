@@ -28,7 +28,7 @@
       
 const urlParams = new URLSearchParams(window.location.search);
 const conversationIdFromUrl = urlParams.get('conversationId');
-const participantIdFromUrl = urlParams.get('participantId');
+const participantIdFromUrl = urlParams.get('participants');
 
 const state = btoa(JSON.stringify({ conversationId: conversationIdFromUrl, participantId: participantIdFromUrl }));
 console.log("state al declarar:", state);
