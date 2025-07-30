@@ -83,6 +83,8 @@ const decodedState = decodeURIComponent(state);
       const API_ENDPOINT = `https://api.${ENVIRONMENT}/api/v2/conversations/calls/${conversationId}/participants/${participantId}`;
 
       window.loadData = function() {
+        console.log("✅ loadData fue llamada");
+        alert("loadData ejecutada automáticamente");
         console.log("Botón clicado");
         console.log("API_ENDPOINT:", API_ENDPOINT);
         console.log("Token:", gToken);
@@ -110,6 +112,7 @@ const decodedState = decodeURIComponent(state);
           }
         });
       };
+      console.log("Ejecutando loadData automáticamente tras obtener el token...");
       window.loadData();
     }
     </script>
