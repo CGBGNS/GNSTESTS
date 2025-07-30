@@ -27,7 +27,7 @@
       const REDIRECT_URI = 'https://cgbgns.github.io/GNSTESTS/index.html';
       const urlParams = new URLSearchParams(window.location.search);
     const conversationIdFromUrl = urlParams.get('conversationId');
-    const participantIdFromUrl = urlParams.get('participantId');
+    const participantIdFromUrl = urlParams.get('participants');
 
     function getTokenAndStateFromHash() {
       const hash = window.location.hash.substring(1);
